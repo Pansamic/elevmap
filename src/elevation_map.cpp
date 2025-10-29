@@ -6,7 +6,6 @@
 #include <numeric>
 #include <Eigen/Dense>
 #include <mobile_planner/elevation_map.h>
-#include <mobile_planner/point_cloud_process.h>
 
 ElevationMap::ElevationMap(
     const std::string& method,

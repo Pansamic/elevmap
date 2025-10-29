@@ -39,7 +39,6 @@ include_directories(
 set(MOBILE_PLANNER_SOURCES
     src/elevation_map.cpp
     src/grid_map.cpp
-    src/point_cloud_process.cpp
     src/mobile_planner.cpp
 )
 
@@ -48,7 +47,6 @@ set(MOBILE_PLANNER_HEADERS
     include/mobile_planner/elevation_map.h
     include/mobile_planner/grid_map.h
     include/mobile_planner/mobile_planner.h
-    include/mobile_planner/point_cloud_process.h
 )
 
 # Create library based on option
