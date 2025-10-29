@@ -1,12 +1,13 @@
 cmake_minimum_required(VERSION 3.10)
 
-project(MobilePlanner)
+project(MobilePlanner
+    VERSION 1.0
+    LANGUAGES C CXX
+)
 
 option(BUILD_TESTS "Build test programs" OFF)
 option(BUILD_SHARED_LIBS "Build shared library" OFF)
 option(MOBILE_PLANNER_LOG_MAP OFF)
-
-enable_language(C CXX)
 
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
@@ -23,12 +24,26 @@ if ( CMAKE_BUILD_TYPE STREQUAL "Release" )
     add_compile_options(-DNDEBUG)
 endif()
 
-if ( CMAKE_BUILD_TYPE STREQUAL "Release" )
-    add_compile_options(-O3)
-    add_compile_options(-DNDEBUG)
-endif()
+# Set third party directory for potential source builds
+set(THIRD_PARTY_PREFIX "${CMAKE_BINARY_DIR}/_deps/")
 
-include(cmake/dependencies.cmake)
+# Find packages or include build configurations
+# find_package(Eigen3 QUIET)
+# if(NOT Eigen3_FOUND)
+    include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/dependency/eigen.cmake)
+# endif()
+
+# find_package(Boost QUIET)
+# if(NOT Boost_FOUND)
+    include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/dependency/boost.cmake)
+# endif()
+
+# find_package(PCL QUIET)
+# if(NOT PCL_FOUND)
+    include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/dependency/pcl.cmake)
+# endif()
+
+include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/dependency/yaml-cpp.cmake)
 
 # Source files
 set(MOBILE_PLANNER_SOURCES
@@ -51,23 +66,19 @@ else()
     add_library(${PROJECT_NAME} STATIC ${MOBILE_PLANNER_SOURCES})
 endif()
 
-add_dependencies(${PROJECT_NAME} eigen pcl yaml-cpp boost)
-
-# Set include directories and link libraries for target
-target_include_directories(${PROJECT_NAME} PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-    $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/_deps/install/include>
-    $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/_deps/install/include/eigen3>
-    $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/_deps/install/include/pcl-1.15>
-    $<INSTALL_INTERFACE:include>
-    $<INSTALL_INTERFACE:include/eigen3>
-    $<INSTALL_INTERFACE:include/pcl-1.15>
+# Link with dependencies (either system installed or built from source)
+target_link_libraries(${PROJECT_NAME} PUBLIC
+    Eigen3::Eigen
+    yaml-cpp::yaml-cpp
+    Boost::boost
+    ${PCL_LIBRARIES}
 )
 
-target_link_libraries(${PROJECT_NAME} PUBLIC
-    ${CMAKE_BINARY_DIR}/_deps/install/lib/libpcl_common.so
-    ${CMAKE_BINARY_DIR}/_deps/install/lib/libpcl_io.so
-    ${CMAKE_BINARY_DIR}/_deps/install/lib/libyaml-cpp.a
+# Set include directories
+target_include_directories(${PROJECT_NAME} PUBLIC
+    $<BUILD_INTERFACE:${PCL_INCLUDE_DIRS}>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include>
 )
 
 # Install targets with export
