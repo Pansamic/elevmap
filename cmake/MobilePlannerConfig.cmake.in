@@ -1,0 +1,14 @@
+@PACKAGE_INIT@
+
+include(CMakeFindDependencyMacro)
+
+# Find dependencies
+find_dependency(PCL REQUIRED)
+find_dependency(Eigen3 REQUIRED)
+find_dependency(Boost REQUIRED)
+find_dependency(yaml-cpp REQUIRED)
+
+# Our library targets
+include("${CMAKE_CURRENT_LIST_DIR}/MobilePlannerTargets.cmake")
+
+check_required_components(MobilePlanner)
