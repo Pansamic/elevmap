@@ -31,10 +31,3 @@ set_target_properties(yaml-cpp::yaml-cpp PROPERTIES
     IMPORTED_LOCATION ${YAML_CPP_LIBRARIES}
     INTERFACE_INCLUDE_DIRECTORIES ${YAML_CPP_INCLUDE_DIR}
 )
-
-# FetchContent_Declare(
-#     yaml-cpp
-#     GIT_REPOSITORY https://github.com/jbeder/yaml-cpp.git
-#     GIT_TAG 0.8.0
-# )
-# FetchContent_MakeAvailable(yaml-cpp)

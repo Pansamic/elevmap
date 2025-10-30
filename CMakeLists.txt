@@ -38,22 +38,9 @@ endif()
 # Set third party directory for potential source builds
 set(THIRD_PARTY_PREFIX "${CMAKE_BINARY_DIR}/_deps/")
 
-# Find packages or include build configurations
-# find_package(Eigen3 QUIET)
-# if(NOT Eigen3_FOUND)
-    include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/dependency/eigen.cmake)
-# endif()
-
-# find_package(Boost QUIET)
-# if(NOT Boost_FOUND)
-    include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/dependency/boost.cmake)
-# endif()
-
-# find_package(PCL QUIET)
-# if(NOT PCL_FOUND)
-    include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/dependency/pcl.cmake)
-# endif()
-
+include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/dependency/eigen.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/dependency/boost.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/dependency/pcl.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/dependency/yaml-cpp.cmake)
 
 # Source files
