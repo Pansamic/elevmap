@@ -80,8 +80,12 @@ int main()
     );
 
     // Update the map with the point cloud
+    uint8_t repeat_times = 1;
     auto processing_start = std::chrono::high_resolution_clock::now();
-    elevation_map.update(cloud);
+    for (uint8_t i = 0; i < repeat_times ; i++)
+    {
+        elevation_map.update(cloud);
+    }
     auto processing_end = std::chrono::high_resolution_clock::now();
 
     const std::vector<Eigen::MatrixXf>& maps = elevation_map.getMaps();
@@ -143,7 +147,11 @@ int main()
     std::cout << "Found path with " << waypoints.size() << " waypoints" << std::endl;
     
     // Export waypoints as binary file
-    std::string waypoints_filepath = "temp/binary/maps_direct_static/waypoints.bin";
+    std::string waypoints_filepath = "temp/binary/path/astar.bin";
+
+    // Create directory if it doesn't exist
+    std::filesystem::create_directories("temp/binary/path/");
+
     std::ofstream waypoints_file(waypoints_filepath, std::ios::binary);
     
     if (waypoints_file.is_open())
@@ -172,7 +180,7 @@ int main()
     auto processing_duration = std::chrono::duration_cast<std::chrono::milliseconds>(processing_end - processing_start);
     auto total_duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);
     
-    std::cout << "Point cloud processing time: " << processing_duration.count() << " ms" << std::endl;
+    std::cout << "Point cloud processing time: " << processing_duration.count() / repeat_times << " ms" << std::endl;
     std::cout << "Total execution time: " << total_duration.count() << " ms" << std::endl;
 
     return 0;
