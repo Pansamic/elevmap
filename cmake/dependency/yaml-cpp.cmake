@@ -3,6 +3,7 @@ include(ExternalProject)
 
 ExternalProject_Add(yaml-cpp
     URL https://github.com/jbeder/yaml-cpp/archive/refs/tags/0.8.0.tar.gz
+    URL_HASH SHA256=fbe74bbdcee21d656715688706da3c8becfd946d92cd44705cc6098bb23b3a16
     DOWNLOAD_NAME yaml-cpp-0.8.0.tar.gz
     DOWNLOAD_DIR   "${THIRD_PARTY_PREFIX}/downloads"
     TMP_DIR        "${THIRD_PARTY_PREFIX}/tmp"

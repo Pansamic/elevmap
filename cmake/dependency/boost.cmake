@@ -3,6 +3,7 @@ include(ExternalProject)
 
 ExternalProject_Add(boost
     URL https://github.com/boostorg/boost/releases/download/boost-1.89.0/boost-1.89.0-cmake.tar.gz
+    URL_HASH SHA256=954a01219bf818c7fb850fa610c2c8c71a4fa28fa32a1900056bcb6ff58cf908
     DOWNLOAD_NAME boost-1.89.0.tar.gz
     DOWNLOAD_DIR   "${THIRD_PARTY_PREFIX}/downloads"
     TMP_DIR        "${THIRD_PARTY_PREFIX}/tmp"

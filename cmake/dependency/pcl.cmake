@@ -17,6 +17,7 @@ endif()
 
 ExternalProject_Add(pcl
     URL https://github.com/PointCloudLibrary/pcl/archive/refs/tags/pcl-1.15.1.zip
+    URL_HASH SHA256=e40fff11625b45beee1fe247a74c79e02bb6a88f38d1b247b4335bda51c84f95
     DOWNLOAD_NAME pcl-1.15.1.zip
     DOWNLOAD_DIR   "${THIRD_PARTY_PREFIX}/downloads"
     TMP_DIR        "${THIRD_PARTY_PREFIX}/tmp"
