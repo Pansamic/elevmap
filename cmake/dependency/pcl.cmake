@@ -38,6 +38,14 @@ ExternalProject_Get_Property(boost INSTALL_DIR)
 file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/_deps/install/include/pcl-1.15)
 file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/_deps/install/lib)
 
+set(PCL_LIBRARIES
+    libpcl_common.so
+    libpcl_io_ply.so
+    libpcl_io.so
+    libpcl_ml.so
+    libpcl_octree.so
+    libpcl_stereo.so
+)
 if(NOT TARGET PCL::PCL)
     # Create imported target
     add_library(PCL::PCL INTERFACE IMPORTED)
@@ -45,5 +53,6 @@ if(NOT TARGET PCL::PCL)
     set_target_properties(PCL::PCL PROPERTIES
         INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_BINARY_DIR}/_deps/install/include/pcl-1.15"
         INTERFACE_LINK_DIRECTORIES "${CMAKE_BINARY_DIR}/_deps/install/lib"
+        INTERFACE_LINK_LIBRARIES "${PCL_LIBRARIES}"
     )
 endif()

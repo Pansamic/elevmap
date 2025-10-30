@@ -71,7 +71,7 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
     Eigen3::Eigen
     yaml-cpp::yaml-cpp
     Boost::boost
-    ${PCL_LIBRARIES}
+    PCL::PCL
 )
 
 # Set include directories
@@ -138,7 +138,7 @@ install(FILES
 )
 
 # Add test executable if tests are enabled
-if(MOBILE_PLANNER_BUILD_TESTS)
+if(BUILD_TESTS)
     add_executable(test_map_plan_static test/test_map_plan_static.cpp)
-    target_link_libraries(test_map_plan_static PRIVATE MobilePlanner::MobilePlanner)
+    target_link_libraries(test_map_plan_static PRIVATE MobilePlanner)
 endif()
