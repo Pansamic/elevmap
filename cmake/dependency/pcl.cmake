@@ -1,20 +1,6 @@
 include(FetchContent)
 include(ExternalProject)
 
-# Check for AVX support
-include(CheckCXXCompilerFlag)
-check_cxx_compiler_flag("-mavx2" COMPILER_SUPPORTS_AVX2)
-if(COMPILER_SUPPORTS_AVX2)
-    set(PCL_CXX_FLAGS "-mavx2")
-else()
-    check_cxx_compiler_flag("-mavx" COMPILER_SUPPORTS_AVX)
-    if(COMPILER_SUPPORTS_AVX)
-        set(PCL_CXX_FLAGS "-mavx")
-    else()
-        set(PCL_CXX_FLAGS "")  # fallback: no AVX
-    endif()
-endif()
-
 ExternalProject_Add(pcl
     URL https://github.com/PointCloudLibrary/pcl/archive/refs/tags/pcl-1.15.1.zip
     URL_HASH SHA256=e40fff11625b45beee1fe247a74c79e02bb6a88f38d1b247b4335bda51c84f95
@@ -29,10 +15,11 @@ ExternalProject_Add(pcl
         -DCMAKE_MODULE_PATH=${CMAKE_MODULE_PATH}
         -DCMAKE_PREFIX_PATH=${CMAKE_BINARY_DIR}/_deps/install
         -DBoost_USE_STATIC_LIBS=OFF
-        -DCMAKE_CXX_FLAGS=${PCL_CXX_FLAGS}
+        -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
         -DEIGEN_MAX_ALIGN_BYTES=32
     INSTALL_COMMAND $(MAKE) install
     TEST_COMMAND ""
+    DEPENDS boost eigen
 )
 
 ExternalProject_Get_Property(boost INSTALL_DIR)
