@@ -7,7 +7,6 @@ project(MobilePlanner
 
 option(BUILD_TESTS "Build test programs" OFF)
 option(BUILD_SHARED_LIBS "Build shared library" OFF)
-option(MOBILE_PLANNER_LOG_MAP OFF)
 
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
@@ -35,13 +34,8 @@ if(NOT COMPILER_SUPPORTS_AVX2 AND COMPILER_SUPPORTS_AVX)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mavx")
 endif()
 
-# Set third party directory for potential source builds
-set(THIRD_PARTY_PREFIX "${CMAKE_BINARY_DIR}/_deps/")
-
-include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/dependency/eigen.cmake)
-include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/dependency/boost.cmake)
-include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/dependency/pcl.cmake)
-include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/dependency/yaml-cpp.cmake)
+find_package(Eigen3 REQUIRED)
+find_package(PCL REQUIRED)
 
 # Source files
 set(MOBILE_PLANNER_SOURCES
@@ -67,17 +61,29 @@ endif()
 # Link with dependencies (either system installed or built from source)
 target_link_libraries(${PROJECT_NAME} PUBLIC
     Eigen3::Eigen
-    yaml-cpp::yaml-cpp
     Boost::boost
-    PCL::PCL
+    ${PCL_LIBRARIES}
 )
 
 # Set include directories
 target_include_directories(${PROJECT_NAME} PUBLIC
+    $<BUILD_INTERFACE:${EIGEN_INCLUDE_DIRS}>
     $<BUILD_INTERFACE:${PCL_INCLUDE_DIRS}>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>
 )
+
+# Add test executable if tests are enabled
+if(BUILD_TESTS)
+    find_package(yaml-cpp REQUIRED)
+    add_executable(test_map_plan_static test/test_map_plan_static.cpp)
+    target_include_directories(MobilePlanner PRIVATE
+        ${YAML_CPP_INCLUDE_DIR}
+    )
+    target_link_libraries(test_map_plan_static PRIVATE
+        MobilePlanner
+        ${YAML_CPP_LIBRARIES})
+endif()
 
 # Install targets with export
 install(TARGETS ${PROJECT_NAME}
@@ -91,20 +97,6 @@ install(TARGETS ${PROJECT_NAME}
 # Install headers
 install(FILES ${MOBILE_PLANNER_HEADERS} 
     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/mobile_planner
-)
-
-# Install third-party headers and libraries
-install(DIRECTORY ${CMAKE_BINARY_DIR}/_deps/install/include/
-    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-    FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp"
-)
-
-install(DIRECTORY ${CMAKE_BINARY_DIR}/_deps/install/lib/
-    DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    FILES_MATCHING 
-    PATTERN "*.so*"
-    PATTERN "*.a"
-    PATTERN "*.dylib*"
 )
 
 # Export targets
@@ -134,9 +126,3 @@ install(FILES
     "${CMAKE_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake"
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}
 )
-
-# Add test executable if tests are enabled
-if(BUILD_TESTS)
-    add_executable(test_map_plan_static test/test_map_plan_static.cpp)
-    target_link_libraries(test_map_plan_static PRIVATE MobilePlanner)
-endif()
