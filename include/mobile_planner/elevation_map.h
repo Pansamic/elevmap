@@ -291,31 +291,6 @@ private:
     void updateFullGP(const pcl::PointCloud<pcl::PointXYZ>::Ptr point_cloud);
     
     /**
-     * @brief Divide point cloud into grid cells
-     * 
-     * Partitions a point cloud into grid cells based on XY coordinates.
-     * 
-     * @param cell_heights Output map of grid cell indices to point vectors
-     * @param point_cloud Input point cloud to partition
-     */
-    [[nodiscard]]
-    std::unordered_map<std::pair<std::size_t, std::size_t>, std::vector<float>, PairHash>
-    dividePointCloudToGridCells(
-        const pcl::PointCloud<pcl::PointXYZ>::Ptr point_cloud
-    ) const;
-    
-    /**
-     * @brief Extract top surface points from each grid cell
-     * 
-     * For each grid cell, keeps only the highest points up to the maximum limit.
-     * 
-     * @param cell_heights Map of grid cell indices to point vectors (modified in place)
-     */
-    void extractPointCloudTopSurface(
-        std::unordered_map<std::pair<std::size_t, std::size_t>, std::vector<float>, PairHash>& cell_heights
-    ) const;
-    
-    /**
      * @brief Remove points above maximum height limit
      * 
      * Removes points from the point cloud that are above the maximum height limit.

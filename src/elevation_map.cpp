@@ -69,39 +69,73 @@ bool ElevationMap::isValidCoordinate(float x, float y) const
 
 void ElevationMap::updateDirect(const pcl::PointCloud<pcl::PointXYZ>::Ptr point_cloud)
 {
+    // Compute mean and variance with Welford's online algorithm
+    // This algorithm is relatively numerically stable.
+    auto compute_mean_variance = [](const std::vector<float>& data) -> std::tuple<float, float> 
+    {
+        if (data.empty()) {
+            return {0.0f, 0.0f};
+        }
+
+        float sum = 0.0f;
+        float sum_squares = 0.0f;
+        const size_t n = data.size();
+
+        // Single pass computation
+        for (size_t i = 0; i < n; ++i) {
+            const float x = data[i];
+            sum += x;
+            sum_squares += x * x;
+        }
+
+        const float mean = sum / static_cast<float>(n);
+        const float variance = (sum_squares / static_cast<float>(n)) - (mean * mean);
+
+        return {mean, variance};
+    };
+
     // Check if map needs to be extended to cover new point cloud
     checkAndExtendMapIfNeeded(point_cloud);
 
     removeOverHeightPoints(point_cloud);
 
-    // Create a map to store points for each grid cell
-    // Partition point cloud to grid cells
-    auto cell_heights = dividePointCloudToGridCells(point_cloud);
-
-    // Extract top surface points in each grid cell
-    extractPointCloudTopSurface(cell_heights);
+    std::unordered_map<std::pair<std::size_t, std::size_t>, std::vector<float>, PairHash> grid_points;
 
     // Update elevation map with new measurements using Kalman filter
-    for (auto cell : cell_heights)
+    for (auto point = point_cloud->begin(); point != point_cloud->end(); point++)
     {
-        if (cell.second.empty())
-            continue;
+        auto [row, col] = getGridCellIndex(point->x, point->y);
+        
+        auto cell_id = std::make_pair(row, col);
 
-        std::size_t valid_amount = std::min(cell.second.size(), num_max_points_in_grid_);
-        // Calculate mean and variance of points in this cell
-        float sum_height = std::accumulate(cell.second.begin(), cell.second.begin() + valid_amount, 0.0f);
-        float mean_height = sum_height / static_cast<float>(valid_amount);
+        auto cell = grid_points.find(cell_id);
 
-        float sum_sq_diff = 0.0f;
-        for (float *height = cell.second.data(); height < cell.second.data() + valid_amount; height++)
+        if (cell == grid_points.end())
         {
-            float diff = *height - mean_height;
-            sum_sq_diff += diff * diff;
+            grid_points[cell_id] = std::vector<float>();
+            cell = grid_points.find(cell_id);
         }
-        float var_height = sum_sq_diff / static_cast<float>(valid_amount);
+        if (cell->second.size() >= num_max_points_in_grid_)
+        {
+            auto min_point = std::min_element(cell->second.begin(), cell->second.end());
 
-        std::size_t row = cell.first.first;
-        std::size_t col = cell.first.second;
+            if(*min_point < point->z)
+            {
+                *min_point = point->z;
+            }
+        }
+        else
+        {
+            cell->second.push_back(point->z);
+        }
+    }
+
+    for (auto [cell_id, cell] : grid_points)
+    {
+        auto [mean_height, var_height] = compute_mean_variance(cell);
+
+        std::size_t row = cell_id.first;
+        std::size_t col = cell_id.second;
 
         float &existing_mean = maps_[ELEVATION](row, col);
         float &existing_var = maps_[UNCERTAINTY](row, col);
@@ -139,35 +173,6 @@ void ElevationMap::updateDirect(const pcl::PointCloud<pcl::PointXYZ>::Ptr point_
 
     // Compute traversability map with default parameters
     computeTraversabilityMap();
-}
-[[nodiscard]]
-std::unordered_map<std::pair<std::size_t, std::size_t>, std::vector<float>, ElevationMap::PairHash>
-ElevationMap::dividePointCloudToGridCells(
-    const pcl::PointCloud<pcl::PointXYZ>::Ptr point_cloud) const
-{
-    std::unordered_map<std::pair<std::size_t, std::size_t>, std::vector<float>, PairHash> cell_heights;
-
-    // Iterate through all points in the point cloud
-    for (auto point = point_cloud->rbegin(); point != point_cloud->rend(); point++)
-    {
-        auto [row, col] = getGridCellIndex(point->x, point->y);
-
-        // Ensure indices are within bounds
-        if (row < rows_ && col < cols_)
-        {
-            auto cell = cell_heights.find({row, col});
-            if (cell == cell_heights.end())
-            {
-                cell_heights[{row, col}] = std::vector<float>();
-                cell_heights[{row, col}].reserve(256);
-                cell = cell_heights.find({row, col});
-            }
-            // Add point to the corresponding grid cell
-            cell->second.push_back(point->z);
-        }
-    }
-
-    return cell_heights;
 }
 
 void ElevationMap::removeOverHeightPoints(pcl::PointCloud<pcl::PointXYZ>::Ptr point_cloud) const
@@ -384,38 +389,6 @@ void ElevationMap::computeTraversabilityMap()
 
             maps_[TRAVERSABILITY](i, j) = slope_term + step_height_term + roughness_term;
         }
-    }
-}
-
-void ElevationMap::extractPointCloudTopSurface(
-    std::unordered_map<std::pair<std::size_t, std::size_t>, std::vector<float>, PairHash> &cell_heights) const
-{
-    // Lambda for insertion sort (descending)
-    auto insertionSortDesc = [](std::vector<float> &vec)
-    {
-        for (int i = 1; i < vec.size(); ++i)
-        {
-            float key = vec[i];
-            int j = i - 1;
-
-            // Move elements that are LESS than key one position ahead
-            // (for descending order, we want larger elements first)
-            while (j >= 0 && vec[j] < key)
-            {
-                vec[j + 1] = vec[j];
-                --j;
-            }
-            vec[j + 1] = key;
-        }
-    };
-
-    for (auto cell : cell_heights)
-    {
-        if (cell.second.empty())
-            continue;
-        // insertion sort is the fastest method if the vector is already sorted.
-        // `heights` is already sorted because point cloud is sorted.
-        insertionSortDesc(cell.second);
     }
 }
 
