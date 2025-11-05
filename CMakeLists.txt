@@ -73,6 +73,8 @@ target_include_directories(${PROJECT_NAME} PUBLIC
     $<INSTALL_INTERFACE:include>
 )
 
+target_compile_options(${PROJECT_NAME} PRIVATE -fopenmp)
+
 # Add test executable if tests are enabled
 if(BUILD_TESTS)
     find_package(yaml-cpp REQUIRED)

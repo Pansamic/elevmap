@@ -75,20 +75,53 @@ void ElevationMap::updateDirect(const pcl::PointCloud<pcl::PointXYZ>::Ptr point_
     removeOverHeightPoints(point_cloud);
 
     // Update elevation map with new measurements using Kalman filter
-    for (auto point = point_cloud->begin(); point != point_cloud->end(); point++)
-    {
-        auto [row, col] = getGridCellIndex(point->x, point->y);
+    // Optimized version using pre-sorting to enable safe parallel processing
 
-        if (std::isnan(maps_[ELEVATION](row, col)))
+    // Pre-sort points by grid cell to avoid data races in parallel processing
+    std::vector<std::vector<float>> points_per_cell(rows_ * cols_);
+
+    // Phase 1: Group points by cell
+    for (const auto &point : point_cloud->points)
+    {
+        auto [row, col] = getGridCellIndex(point.x, point.y);
+        std::size_t linear_index = row * cols_ + col;
+        points_per_cell[linear_index].push_back(point.z);
+    }
+
+    // Phase 2: Process each cell
+#ifdef _OPENMP
+    #pragma omp parallel for
+#endif
+    for (std::size_t linear_index = 0; linear_index < rows_ * cols_; ++linear_index)
+    {
+        if (points_per_cell[linear_index].empty())
         {
-            maps_[ELEVATION](row, col) = point->z;
-            maps_[UNCERTAINTY](row, col) = 0.0f;
             continue;
         }
-        if (maps_[ELEVATION](row, col) < point->z)
+
+        std::size_t row = linear_index / cols_;
+        std::size_t col = linear_index % cols_;
+
+        // Find maximum Z value among all points in this cell
+        float max_z = std::numeric_limits<float>::lowest();
+        bool has_valid_point = false;
+
+        for (const auto &point : points_per_cell[linear_index])
         {
-            maps_[ELEVATION](row, col) = point->z;
-            maps_[UNCERTAINTY](row, col) = 0.0f;
+            if (!std::isnan(point))
+            {
+                max_z = std::max(max_z, point);
+                has_valid_point = true;
+            }
+        }
+
+        if (has_valid_point)
+        {
+            if (std::isnan(maps_[ELEVATION](row, col)) || maps_[ELEVATION](row, col) < max_z)
+            {
+                maps_[ELEVATION](row, col) = max_z;
+                maps_[UNCERTAINTY](row, col) = 0.0f;
+            }
         }
     }
 
@@ -101,14 +134,30 @@ void ElevationMap::updateDirect(const pcl::PointCloud<pcl::PointXYZ>::Ptr point_
     // Apply Gaussian filter to filtered elevation map
     filterElevation(elevation_map_filter_type_);
 
-    // Compute slope map
-    computeSlopeMap();
-
-    // Compute step height map
-    computeStepHeightMap();
-
-    // Compute roughness map
-    computeRoughnessMap();
+#ifdef _OPENMP
+    #pragma omp parallel sections
+#endif
+    {
+#ifdef _OPENMP
+        #pragma omp section
+#endif
+        {
+            // Compute slope map
+            computeSlopeMap();
+        }
+#ifdef _OPENMP
+        #pragma omp section
+#endif
+        {
+            computeStepHeightMap();
+        }
+#ifdef _OPENMP
+        #pragma omp section
+#endif
+        {
+            computeRoughnessMap();
+        }
+    }
 
     // Compute traversability map with default parameters
     computeTraversabilityMap();
