@@ -36,6 +36,7 @@ endif()
 
 find_package(Eigen3 REQUIRED)
 find_package(PCL REQUIRED)
+find_package(OpenMP REQUIRED)
 
 # Source files
 set(MOBILE_PLANNER_SOURCES
@@ -64,6 +65,7 @@ add_library(${PROJECT_NAME}::MobilePlanner ALIAS MobilePlanner)
 target_link_libraries(${PROJECT_NAME} PUBLIC
     Eigen3::Eigen
     Boost::boost
+    OpenMP::OpenMP_CXX
     ${PCL_LIBRARIES}
 )
 
