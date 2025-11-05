@@ -42,15 +42,6 @@ public:
         TRAVERSABILITY
     };
 
-    struct PairHash
-    {
-        std::size_t operator()(const std::pair<std::size_t, std::size_t>& p) const
-        {
-            auto h1 = std::hash<std::size_t>{}(p.first);
-            auto h2 = std::hash<std::size_t>{}(p.second);
-            return h1 ^ (h2 << 1);
-        }
-    };
     /**
      * @brief Delete default constructor
      */

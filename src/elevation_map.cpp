@@ -69,87 +69,26 @@ bool ElevationMap::isValidCoordinate(float x, float y) const
 
 void ElevationMap::updateDirect(const pcl::PointCloud<pcl::PointXYZ>::Ptr point_cloud)
 {
-    // Compute mean and variance with Welford's online algorithm
-    // This algorithm is relatively numerically stable.
-    auto compute_mean_variance = [](const std::vector<float>& data) -> std::tuple<float, float> 
-    {
-        if (data.empty()) {
-            return {0.0f, 0.0f};
-        }
-
-        float sum = 0.0f;
-        float sum_squares = 0.0f;
-        const size_t n = data.size();
-
-        // Single pass computation
-        for (size_t i = 0; i < n; ++i) {
-            const float x = data[i];
-            sum += x;
-            sum_squares += x * x;
-        }
-
-        const float mean = sum / static_cast<float>(n);
-        const float variance = (sum_squares / static_cast<float>(n)) - (mean * mean);
-
-        return {mean, variance};
-    };
-
     // Check if map needs to be extended to cover new point cloud
     checkAndExtendMapIfNeeded(point_cloud);
 
     removeOverHeightPoints(point_cloud);
 
-    std::unordered_map<std::pair<std::size_t, std::size_t>, std::vector<float>, PairHash> grid_points;
-
     // Update elevation map with new measurements using Kalman filter
     for (auto point = point_cloud->begin(); point != point_cloud->end(); point++)
     {
         auto [row, col] = getGridCellIndex(point->x, point->y);
-        
-        auto cell_id = std::make_pair(row, col);
 
-        auto cell = grid_points.find(cell_id);
-
-        if (cell == grid_points.end())
+        if (std::isnan(maps_[ELEVATION](row, col)))
         {
-            grid_points[cell_id] = std::vector<float>();
-            cell = grid_points.find(cell_id);
+            maps_[ELEVATION](row, col) = point->z;
+            maps_[UNCERTAINTY](row, col) = 0.0f;
+            continue;
         }
-        if (cell->second.size() >= num_max_points_in_grid_)
+        if (maps_[ELEVATION](row, col) < point->z)
         {
-            auto min_point = std::min_element(cell->second.begin(), cell->second.end());
-
-            if(*min_point < point->z)
-            {
-                *min_point = point->z;
-            }
-        }
-        else
-        {
-            cell->second.push_back(point->z);
-        }
-    }
-
-    for (auto [cell_id, cell] : grid_points)
-    {
-        auto [mean_height, var_height] = compute_mean_variance(cell);
-
-        std::size_t row = cell_id.first;
-        std::size_t col = cell_id.second;
-
-        float &existing_mean = maps_[ELEVATION](row, col);
-        float &existing_var = maps_[UNCERTAINTY](row, col);
-
-        // If this is the first measurement for this cell, just use the new values
-        if (std::isnan(existing_mean) || std::isnan(existing_var))
-        {
-            existing_mean = mean_height;
-            existing_var = var_height;
-        }
-        else
-        {
-            // Fuse with existing measurement using Kalman filter
-            fuseElevationWithKalmanFilter(existing_mean, existing_var, mean_height, var_height);
+            maps_[ELEVATION](row, col) = point->z;
+            maps_[UNCERTAINTY](row, col) = 0.0f;
         }
     }
 
