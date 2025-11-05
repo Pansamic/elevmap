@@ -58,6 +58,8 @@ else()
     add_library(${PROJECT_NAME} STATIC ${MOBILE_PLANNER_SOURCES})
 endif()
 
+add_library(${PROJECT_NAME}::MobilePlanner ALIAS MobilePlanner)
+
 # Link with dependencies (either system installed or built from source)
 target_link_libraries(${PROJECT_NAME} PUBLIC
     Eigen3::Eigen
@@ -73,18 +75,15 @@ target_include_directories(${PROJECT_NAME} PUBLIC
     $<INSTALL_INTERFACE:include>
 )
 
-target_compile_options(${PROJECT_NAME} PRIVATE -fopenmp)
+target_compile_options(${PROJECT_NAME} PUBLIC -fopenmp)
 
 # Add test executable if tests are enabled
 if(BUILD_TESTS)
     find_package(yaml-cpp REQUIRED)
     add_executable(test_map_plan_static test/test_map_plan_static.cpp)
-    target_include_directories(MobilePlanner PRIVATE
-        ${YAML_CPP_INCLUDE_DIR}
-    )
     target_link_libraries(test_map_plan_static PRIVATE
         MobilePlanner
-        ${YAML_CPP_LIBRARIES})
+        yaml-cpp::yaml-cpp)
 endif()
 
 # Install targets with export
