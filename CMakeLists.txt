@@ -42,14 +42,12 @@ find_package(OpenMP REQUIRED)
 set(MOBILE_PLANNER_SOURCES
     src/elevation_map.cpp
     src/grid_map.cpp
-    src/mobile_planner.cpp
 )
 
 # Header files
 set(MOBILE_PLANNER_HEADERS
     include/mobile_planner/elevation_map.h
     include/mobile_planner/grid_map.h
-    include/mobile_planner/mobile_planner.h
 )
 
 # Create library based on option
