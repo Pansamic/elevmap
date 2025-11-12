@@ -94,7 +94,7 @@ install(TARGETS ${PROJECT_NAME}
 
 # Install headers
 install(FILES ${MOBILE_PLANNER_HEADERS} 
-    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/mobile_planner
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/elevmap
 )
 
 # Export targets
