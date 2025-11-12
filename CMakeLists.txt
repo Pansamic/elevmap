@@ -81,11 +81,9 @@ target_compile_options(${PROJECT_NAME} PUBLIC -fopenmp)
 
 # Add test executable if tests are enabled
 if(BUILD_TESTS)
-    find_package(yaml-cpp REQUIRED)
     add_executable(test_map_plan_static test/test_map_plan_static.cpp)
     target_link_libraries(test_map_plan_static PRIVATE
-        MobilePlanner
-        yaml-cpp::yaml-cpp)
+        MobilePlanner)
 endif()
 
 # Install targets with export

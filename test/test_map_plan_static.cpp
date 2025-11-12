@@ -5,7 +5,6 @@
 #include <pcl/io/ply_io.h>
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
-#include <yaml-cpp/yaml.h>
 #include <mobile_planner/mobile_planner.h>
 #include <Eigen/Geometry>
 #include <Eigen/StdVector>
@@ -34,32 +33,27 @@ int main()
     // Load parameters from config file
     YAML::Node config = YAML::LoadFile("config/config.yaml");
     
-    float resolution = config["grid_map"]["resolution"].as<float>();
-    std::size_t length_x = config["grid_map"]["default_length_x"].as<std::size_t>();
-    std::size_t length_y = config["grid_map"]["default_length_y"].as<std::size_t>();
-    std::size_t max_top_points_in_grid = config["grid_map"]["max_top_points_in_grid"].as<std::size_t>();
-    std::string elevation_map_filter_type = config["elevation_map"]["elevation_map_filter_type"].as<std::string>();
-    
-    float max_height = config["elevation_map"]["max_height"].as<float>();
-    std::string method = config["elevation_map"]["method"].as<std::string>();
+    float resolution = 0.1;
+    float length_x = 10;
+    float length_y = 10;
+    std::size_t max_top_points_in_grid = 5;
+    std::string method = "direct";
+    std::string elevation_map_filter_type = "gaussian";
+    float max_height = 1.5;
     
     // Direct method parameters
-    float slope_weight = config["elevation_map"]["direct"]["slope_weight"].as<float>();
-    float step_height_weight = config["elevation_map"]["direct"]["step_height_weight"].as<float>();
-    float roughness_weight = config["elevation_map"]["direct"]["roughness_weight"].as<float>();
-    float slope_critical = config["elevation_map"]["direct"]["slope_critical"].as<float>();
-    float step_height_critical = config["elevation_map"]["direct"]["step_height_critical"].as<float>();
-    float roughness_critical = config["elevation_map"]["direct"]["roughness_critical"].as<float>();
+    float slope_weight = 0.33;
+    float step_height_weight = 0.33;
+    float roughness_weight = 0.34;
+    float slope_critical = 0.3;
+    float step_height_critical = 0.1;
+    float roughness_critical = 0.05;
     
     // Gaussian process parameters
-    float l = config["elevation_map"]["gaussian_process"]["l"].as<float>();
-    float sigma_f = config["elevation_map"]["gaussian_process"]["sigma_f"].as<float>();
-    float sigma_n = config["elevation_map"]["gaussian_process"]["sigma_n"].as<float>();
+    float l = 2.0;
+    float sigma_f = 1.0;
+    float sigma_n = 0.2;
 
-    // Planner parameters
-    std::string planner_method = config["planner"]["method"].as<std::string>();
-    float traversability_threshold = config["planner"]["traversability_threshold"].as<float>();
-    
     ElevationMap elevation_map(
         method,
         length_x,
