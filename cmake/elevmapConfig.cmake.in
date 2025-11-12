@@ -8,6 +8,6 @@ find_dependency(Eigen3 REQUIRED)
 find_dependency(Boost REQUIRED)
 
 # Our library targets
-include("${CMAKE_CURRENT_LIST_DIR}/MobilePlannerTargets.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/elevmapTargets.cmake")
 
-check_required_components(MobilePlanner)
+check_required_components(elevmap)

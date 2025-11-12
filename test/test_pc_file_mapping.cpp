@@ -7,7 +7,7 @@
 #include <pcl/point_types.h>
 #include <Eigen/Geometry>
 #include <Eigen/StdVector>
-#include <mobile_planner/elevation_map.h>
+#include <elevmap/elevation_map.h>
 
 int main()
 {

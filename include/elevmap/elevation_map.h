@@ -15,7 +15,7 @@
 #include <Eigen/Core>
 #include <pcl/point_types.h>
 #include <pcl/point_cloud.h>
-#include <mobile_planner/grid_map.h>
+#include <elevmap/grid_map.h>
 
 /**
  * @class ElevationMap

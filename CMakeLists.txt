@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.10)
 
-project(MobilePlanner
+project(elevmap
     VERSION 1.0
     LANGUAGES C CXX
 )
@@ -46,8 +46,8 @@ set(MOBILE_PLANNER_SOURCES
 
 # Header files
 set(MOBILE_PLANNER_HEADERS
-    include/mobile_planner/elevation_map.h
-    include/mobile_planner/grid_map.h
+    include/elevmap/elevation_map.h
+    include/elevmap/grid_map.h
 )
 
 # Create library based on option
@@ -57,7 +57,7 @@ else()
     add_library(${PROJECT_NAME} STATIC ${MOBILE_PLANNER_SOURCES})
 endif()
 
-add_library(${PROJECT_NAME}::MobilePlanner ALIAS MobilePlanner)
+add_library(${PROJECT_NAME}::elevmap ALIAS elevmap)
 
 # Link with dependencies (either system installed or built from source)
 target_link_libraries(${PROJECT_NAME} PUBLIC
@@ -79,9 +79,8 @@ target_compile_options(${PROJECT_NAME} PUBLIC -fopenmp)
 
 # Add test executable if tests are enabled
 if(BUILD_TESTS)
-    add_executable(test_map_plan_static test/test_map_plan_static.cpp)
-    target_link_libraries(test_map_plan_static PRIVATE
-        MobilePlanner)
+    add_executable(test_pc_file_mapping test/test_pc_file_mapping.cpp)
+    target_link_libraries(test_pc_file_mapping PRIVATE elevmap)
 endif()
 
 # Install targets with export

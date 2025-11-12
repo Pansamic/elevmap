@@ -5,7 +5,7 @@
 #include <algorithm>
 #include <numeric>
 #include <Eigen/Dense>
-#include <mobile_planner/elevation_map.h>
+#include <elevmap/elevation_map.h>
 
 ElevationMap::ElevationMap(
     const std::string &method,

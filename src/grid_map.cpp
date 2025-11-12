@@ -7,7 +7,7 @@
  * 
  * @copyright Copyright (c) 2025
  */
-#include <mobile_planner/grid_map.h>
+#include <elevmap/grid_map.h>
 #include <Eigen/Core>
 
 GridMap::GridMap(std::size_t num_maps, float length_x, float length_y, float resolution)
