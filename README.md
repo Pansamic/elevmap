@@ -1,13 +1,46 @@
-# mobile planner
+# elevmap
 
-This is a simple global planner for mobile robots. This system contains an elevation mapping subsystem and a global path planner subsystem. 
+This is a simple elevation mapping system to reconstruct elevation maps from point clouds.
 
 ## build
 
-`cmake -B build && cmake --build build`
+`cmake -B build -DBUILD_TESTS=ON && cmake --build build -j`
 
-CMake compile options:
+## tests
 
+### `python/elevation_mapping_direct.py`
+
+Run test with command under project root path: `python3 python/elevation_mapping_direct.py`
+
+It will generate visualization image of all maps under `temp/figure/maps_direct_static_py/` folder.
+
+### `python/elevation_mapping_full_gaussian.py`
+
+It will compute elevation map and uncertainty map with full Gaussian process model.
+
+### `python/gp1d.py`
+
+It's a Gaussian Process 1D model test.
+
+### `python/gp2d.py`
+
+It's a Gaussian Process 2D model test.
+
+### `python/svgp1d.py`
+
+It's a Sparse Variational Gaussian Process 1D model test.
+
+### `test/test_pc_file_mapping.cpp`
+
+After building, run this executable under project root path: `./build/test_pc_file_mapping`.
+
+It will generate binary maps data under `temp/binary/maps_direct_static/` folder.
+
+Run python script under project root path to generate visualization image of all maps under `temp/figure/maps_direct_static_cpp/` folder.
+
+```bash
+python3 python/visualize_binary_maps.py temp/binary/maps_direct_static/ temp/figure/maps_direct_static_cpp
+```
 
 ## methodology
 
@@ -116,9 +149,6 @@ $$
 $$
 
 where $\omega_1$, $\omega_2$, and $\omega_3$ are weights for slope, step height, and roughness, respectively, totaling to 1. $s_{\text{crit}}$, $\zeta_{\text{crit}}$, and $r_{\text{crit}}$ denote robot-specific critical thresholds for maximum slope, step height, and roughness tolerance before reaching unsafe conditions [\[2\]](https://ieeexplore.ieee.org/document/10610106).
-### reachability check
-
-### path planning
 
 ### reference
 
