@@ -8,22 +8,6 @@ from scipy.ndimage import gaussian_filter
 import os
 import yaml
 
-
-def load_config(config_path='config/config.yaml'):
-    """
-    Load configuration from YAML file.
-    
-    Parameters:
-    config_path: Path to the config file
-    
-    Returns:
-    config: Dictionary with configuration parameters
-    """
-    with open(config_path, 'r') as file:
-        config = yaml.safe_load(file)
-    return config
-
-
 def point_cloud_process_direct(point_cloud, grid_size=None, max_height=None, max_top_points_in_grid=None):
     """
     Process point cloud by grid filtering for direct approach.
@@ -477,14 +461,11 @@ def main():
     # Load point cloud
     filename = 'assets/room.ply'  # Replace with your actual file
     original_point_cloud = o3d.io.read_point_cloud(filename)
-    
-    # Load configuration
-    config = load_config()
-    
+
     # Extract parameters from config
-    grid_resolution = config['grid_map']['resolution']
-    max_height = config['elevation_map']['max_height']
-    max_top_points_in_grid = config['grid_map']['max_top_points_in_grid']
+    grid_resolution = 0.1
+    max_height = 2.0
+    max_top_points_in_grid = 5
     
     # Process point cloud
     processed_points = point_cloud_process_direct(
