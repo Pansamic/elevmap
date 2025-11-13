@@ -117,11 +117,8 @@ void ElevationMap::updateDirect(const pcl::PointCloud<pcl::PointXYZ>::Ptr point_
 
         if (has_valid_point)
         {
-            if (std::isnan(maps_[ELEVATION](row, col)) || maps_[ELEVATION](row, col) < max_z)
-            {
-                maps_[ELEVATION](row, col) = max_z;
-                maps_[UNCERTAINTY](row, col) = 0.0f;
-            }
+            maps_[ELEVATION](row, col) = max_z;
+            maps_[UNCERTAINTY](row, col) = 0.0f;
         }
     }
 
