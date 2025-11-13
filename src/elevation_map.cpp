@@ -117,10 +117,11 @@ void ElevationMap::updateDirect(const pcl::PointCloud<pcl::PointXYZ>::Ptr point_
 
         if (has_valid_point)
         {
-            if (std::isnan(maps_[ELEVATION](row, col)) || maps_[ELEVATION](row, col) < max_z)
+            if (std::isnan(maps_[ELEVATION](row, col)))
             {
-                maps_[ELEVATION](row, col) = max_z;
-                maps_[UNCERTAINTY](row, col) = 0.0f;
+                float &mean = maps_[ELEVATION](row, col);
+                float &variance = maps_[UNCERTAINTY](row, col);
+                fuseElevationWithKalmanFilter(mean, variance, max_z, 1.0f);
             }
         }
     }
